@@ -118,10 +118,10 @@
             "Loading friend_module...",
             "Loading encrypted protocols...", 
             "Root access confirmed.",
-            "Welcome back, Elliot.",
+            "Welcome back, friend.",
         ];
 
-        const GITHUB_USERNAME = "yourusername"; // CHANGE THIS
+        const GITHUB_USERNAME = "thewhateverwhatever"; // CHANGE THIS
 
         // DOM Elements
         const bootScreen = document.getElementById('boot-screen');
@@ -254,24 +254,12 @@
                         </div>
                     `);
                     break;
-                case 'socials':
-                    addToHistory(`
-                        <div class="border border-purple-600 bg-purple-950/20 p-4">
-                            <h3 class="text-purple-400 font-bold flex items-center gap-2"><i data-lucide="share-2" class="w-4 h-4"></i> CONNECT</h3>
-                            <div class="flex flex-col gap-2 mt-3">
-                                <a href="https://github.com/${GITHUB_USERNAME}" target="_blank" class="flex items-center gap-2 text-gray-300 hover:text-white hover:underline"><i data-lucide="github" class="w-4 h-4"></i> GitHub</a>
-                                <a href="#" target="_blank" class="flex items-center gap-2 text-gray-300 hover:text-white hover:underline"><i data-lucide="linkedin" class="w-4 h-4"></i> LinkedIn</a>
-                                <a href="#" target="_blank" class="flex items-center gap-2 text-gray-300 hover:text-white hover:underline"><i data-lucide="twitter" class="w-4 h-4"></i> Twitter / X</a>
-                            </div>
-                        </div>
-                    `);
-                    break;
                 case 'whoami':
                     addToHistory(`
                         <div class="border-l-2 border-green-500 pl-4">
                             <div class="text-white font-bold text-lg">USER: ROOT</div>
-                            <div class="text-gray-400">Role: System Administrator / Vigilante</div>
-                            <div class="mt-2 text-xs text-gray-500">"I wanted to save the world."</div>
+                            <div class="text-gray-400">Role: Cybersecurity Engineer</div>
+                            <div class="mt-2 text-xs text-gray-500">"I’m someone who loves understanding how systems behave, especially when they’re under attack. I explore cybersecurity through building tools, experimenting with system internals, completing hands-on labs, and studying modern threat techniques. My projects reflect how I learn: break it, study it, fix it, and secure it. I’m currently focused on threat detection, forensics, incident response, and defensive engineering."</div>
                         </div>
                     `);
                     break;
