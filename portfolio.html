@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRIENDS_OS // ROOT</title>
+    
+    <!-- Tailwind CSS (No installation needed) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+        body { font-family: 'Fira Code', monospace; background-color: black; color: #22c55e; }
+        
+        /* Animations */
+        @keyframes flicker {
+            0% { opacity: 0.02; } 5% { opacity: 0.05; } 10% { opacity: 0.02; } 100% { opacity: 0.02; }
+        }
+        .animate-flicker { animation: flicker 0.15s infinite; }
+        
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        .glitch:hover { animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite; color: white; }
+        
+        /* Hide Scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="overflow-hidden h-screen flex flex-col">
+
+    <!-- CRT Overlay Effects -->
+    <div class="pointer-events-none fixed inset-0 z-50 h-full w-full overflow-hidden">
+        <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] opacity-20"></div>
+        <div class="animate-flicker absolute inset-0 bg-white opacity-[0.02]"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_50%,rgba(0,0,0,0.4)_100%)]"></div>
+    </div>
+
+    <!-- Boot Screen -->
+    <div id="boot-screen" class="fixed inset-0 bg-black z-40 p-8 text-green-500 text-sm md:text-base flex flex-col justify-end pb-20">
+        <div id="boot-text"></div>
+        <div class="mt-2 animate-pulse">_</div>
+    </div>
+
+    <!-- Main Interface (Hidden until boot done) -->
+    <div id="main-interface" class="hidden flex-col h-full relative z-10">
+        
+        <!-- Header -->
+        <header class="border-b border-green-900/50 bg-black/80 p-4 backdrop-blur-sm flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <!-- Custom Hoodie/Hacker SVG -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white w-8 h-8">
+                    <path d="M12 2a5 5 0 0 0-5 5v2a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2V7a5 5 0 0 0-5-5z"/>
+                    <path d="M10 9h4" stroke="#ef4444" stroke-width="2"/>
+                    <rect x="3" y="14" width="18" height="8" rx="2" opacity="0.5"/>
+                </svg>
+
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-wider glitch cursor-default">FRIENDS_OS</h1>
+                    <div class="text-xs text-green-600 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        UID: 0 (ROOT)
+                    </div>
+                </div>
+            </div>
+            <div class="hidden md:flex gap-4 text-xs text-gray-500">
+                <span>MEM: 64TB</span>
+                <span>CPU: 0.1%</span>
+                <span>PROXY: ON</span>
+            </div>
+        </header>
+
+        <!-- Terminal Output Area -->
+        <main id="terminal-container" class="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar pb-32">
+            <div class="max-w-4xl mx-auto space-y-4">
+                <div class="mb-8 text-sm text-gray-300 border-l-2 border-gray-700 pl-4 py-2">
+                    <p>Hello friend.</p>
+                    <p>Hit <span class="bg-gray-800 px-2 py-0.5 rounded text-white font-bold">&lt;ENTER&gt;</span> to access the skills database.</p>
+                </div>
+                
+                <div id="history"></div>
+
+                <!-- Input Line -->
+                <div class="flex items-center gap-2 text-lg">
+                    <span class="text-green-500 font-bold whitespace-nowrap">root@friend:~$</span>
+                    <input id="cmd-input" type="text" class="bg-transparent border-none outline-none text-white flex-1 w-full caret-green-500" autocomplete="off" autofocus>
+                </div>
+                <div id="bottom-anchor"></div>
+            </div>
+        </main>
+
+        <!-- Mobile Quick Actions -->
+        <div class="md:hidden fixed bottom-4 left-0 right-0 px-4 z-50">
+            <div class="bg-black/90 border border-green-900/50 p-2 rounded flex flex-wrap justify-between gap-2 backdrop-blur-md">
+                <button onclick="runCmd('red')" class="flex flex-col items-center text-[10px] text-red-500 font-bold w-14"><i data-lucide="sword" class="w-4 h-4 mb-1"></i>RED</button>
+                <button onclick="runCmd('blue')" class="flex flex-col items-center text-[10px] text-blue-400 font-bold w-14"><i data-lucide="shield" class="w-4 h-4 mb-1"></i>BLUE</button>
+                <button onclick="runCmd('projects')" class="flex flex-col items-center text-[10px] text-yellow-400 font-bold w-14"><i data-lucide="folder" class="w-4 h-4 mb-1"></i>PROJS</button>
+                <button onclick="runCmd('socials')" class="flex flex-col items-center text-[10px] text-purple-400 font-bold w-14"><i data-lucide="share-2" class="w-4 h-4 mb-1"></i>SOC</button>
+                <button onclick="runCmd('help')" class="flex flex-col items-center text-[10px] text-gray-400 font-bold w-14"><i data-lucide="terminal" class="w-4 h-4 mb-1"></i>MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const BOOT_TEXT = [
+            "Initializing kernel...",
+            "Loading friend_module...",
+            "Bypassing E Corp Firewalls...",
+            "Root access confirmed.",
+            "Welcome back, Elliot.",
+        ];
+
+        const GITHUB_USERNAME = "yourusername"; // CHANGE THIS
+
+        // DOM Elements
+        const bootScreen = document.getElementById('boot-screen');
+        const bootTextContainer = document.getElementById('boot-text');
+        const mainInterface = document.getElementById('main-interface');
+        const historyContainer = document.getElementById('history');
+        const input = document.getElementById('cmd-input');
+        const bottomAnchor = document.getElementById('bottom-anchor');
+
+        // Boot Sequence
+        async function startBoot() {
+            for (let line of BOOT_TEXT) {
+                const p = document.createElement('div');
+                p.textContent = line;
+                p.className = "mb-1";
+                bootTextContainer.appendChild(p);
+                await new Promise(r => setTimeout(r, Math.random() * 200 + 100));
+            }
+            setTimeout(() => {
+                bootScreen.style.display = 'none';
+                mainInterface.classList.remove('hidden');
+                mainInterface.classList.add('flex');
+                lucide.createIcons();
+                input.focus();
+            }, 800);
+        }
+
+        // Command Logic
+        function addToHistory(html, isInput = false) {
+            const div = document.createElement('div');
+            div.className = "mb-2 break-words";
+            if (isInput) {
+                div.innerHTML = `<span class="text-green-500 mr-2">root@friend:~$</span><span class="text-gray-300">${html}</span>`;
+            } else {
+                div.innerHTML = `<div class="mt-1 mb-4 text-green-400 animate-fade-in w-full">${html}</div>`;
+            }
+            historyContainer.appendChild(div);
+            bottomAnchor.scrollIntoView({ behavior: "smooth" });
+            lucide.createIcons();
+        }
+
+        function runCmd(cmd) {
+            const rawCmd = cmd ? cmd.trim().toLowerCase() : '';
+            
+            // If empty command (Enter key), show help
+            if (!rawCmd) {
+                addToHistory('', true);
+                runCmd('help');
+                input.value = '';
+                return;
+            }
+            
+            addToHistory(cmd, true);
+            input.value = '';
+
+            switch(rawCmd) {
+                case 'help':
+                case 'menu':
+                    addToHistory(`
+                        <div class="mb-3 text-xs text-gray-500 border-b border-gray-800 pb-2">AVAILABLE COMMANDS (CLICK OR TYPE):</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <button class="text-left group p-3 border border-red-600/50 bg-red-950/10 hover:bg-red-600 hover:text-black transition-all duration-300" onclick="runCmd('red')">
+                                <span class="font-bold block flex items-center gap-2"><i data-lucide="sword" class="w-4 h-4"></i> COMMAND: RED</span>
+                                <span class="text-xs opacity-70 group-hover:text-black">Show Offensive Security Skills</span>
+                            </button>
+                            
+                            <button class="text-left group p-3 border border-blue-600/50 bg-blue-950/10 hover:bg-blue-600 hover:text-black transition-all duration-300" onclick="runCmd('blue')">
+                                <span class="font-bold block flex items-center gap-2"><i data-lucide="shield" class="w-4 h-4"></i> COMMAND: BLUE</span>
+                                <span class="text-xs opacity-70 group-hover:text-black">Show Defensive Security Skills</span>
+                            </button>
+
+                            <button class="text-left group p-3 border border-yellow-600/50 bg-yellow-950/10 hover:bg-yellow-600 hover:text-black transition-all duration-300" onclick="runCmd('projects')">
+                                <span class="font-bold block flex items-center gap-2"><i data-lucide="folder" class="w-4 h-4"></i> COMMAND: PROJECTS</span>
+                                <span class="text-xs opacity-70 group-hover:text-black">View Code Repositories</span>
+                            </button>
+
+                            <button class="text-left group p-3 border border-purple-600/50 bg-purple-950/10 hover:bg-purple-600 hover:text-black transition-all duration-300" onclick="runCmd('socials')">
+                                <span class="font-bold block flex items-center gap-2"><i data-lucide="share-2" class="w-4 h-4"></i> COMMAND: SOCIALS</span>
+                                <span class="text-xs opacity-70 group-hover:text-black">Encrypted Comms</span>
+                            </button>
+                            
+                            <button class="text-left group p-3 border border-green-900/50 hover:bg-green-500 hover:text-black transition-all duration-300" onclick="runCmd('whoami')">
+                                <span class="font-bold block">COMMAND: WHOAMI</span>
+                                <span class="text-xs opacity-70 group-hover:text-black">Identify User</span>
+                            </button>
+
+                            <button class="text-left group p-3 border border-gray-700 hover:bg-gray-500 hover:text-black transition-all duration-300" onclick="runCmd('clear')">
+                                <span class="font-bold block">COMMAND: CLEAR</span>
+                                <span class="text-xs opacity-70 group-hover:text-black">Wipe Terminal</span>
+                            </button>
+                        </div>
+                    `);
+                    break;
+                case 'red':
+                    addToHistory(`
+                        <div class="border border-red-600 bg-red-950/20 p-4">
+                            <h3 class="text-red-500 font-bold flex items-center gap-2"><i data-lucide="sword" class="w-4 h-4"></i> OFFENSIVE SKILLS</h3>
+                            <div class="text-red-200 text-sm mt-2 space-y-1">
+                                <p>• Network Penetration Testing</p>
+                                <p>• Web Application Security (OWASP)</p>
+                                <p>• Exploit Development (Python/C)</p>
+                                <p>• Social Engineering Simulations</p>
+                            </div>
+                            <a href="https://github.com/${GITHUB_USERNAME}?tab=repositories&q=red" target="_blank" class="inline-block mt-4 bg-red-600 text-black px-3 py-1 font-bold text-sm hover:bg-red-500 transition-colors">VIEW RED TEAM REPOS</a>
+                        </div>
+                    `);
+                    break;
+                case 'blue':
+                    addToHistory(`
+                        <div class="border border-blue-600 bg-blue-950/20 p-4">
+                            <h3 class="text-blue-400 font-bold flex items-center gap-2"><i data-lucide="shield" class="w-4 h-4"></i> DEFENSIVE SKILLS</h3>
+                            <div class="text-blue-200 text-sm mt-2 space-y-1">
+                                <p>• Incident Response & Forensics</p>
+                                <p>• Threat Hunting & Intelligence</p>
+                                <p>• SIEM Architecture (Splunk/ELK)</p>
+                                <p>• Malware Analysis & Reverse Engineering</p>
+                            </div>
+                            <a href="https://github.com/${GITHUB_USERNAME}?tab=repositories&q=blue" target="_blank" class="inline-block mt-4 bg-blue-600 text-black px-3 py-1 font-bold text-sm hover:bg-blue-500 transition-colors">VIEW BLUE TEAM REPOS</a>
+                        </div>
+                    `);
+                    break;
+                case 'projects':
+                    addToHistory(`
+                        <div class="border border-yellow-600 bg-yellow-950/20 p-4">
+                            <h3 class="text-yellow-400 font-bold flex items-center gap-2"><i data-lucide="folder" class="w-4 h-4"></i> PORTFOLIO PROJECTS</h3>
+                            <p class="text-yellow-200 text-sm mt-2">A collection of public tools, security scripts, and research.</p>
+                            <a href="https://github.com/${GITHUB_USERNAME}?tab=repositories" target="_blank" class="inline-block mt-3 bg-yellow-600 text-black px-3 py-1 font-bold text-sm hover:bg-yellow-500 transition-colors">BROWSE ALL</a>
+                        </div>
+                    `);
+                    break;
+                case 'socials':
+                    addToHistory(`
+                        <div class="border border-purple-600 bg-purple-950/20 p-4">
+                            <h3 class="text-purple-400 font-bold flex items-center gap-2"><i data-lucide="share-2" class="w-4 h-4"></i> CONNECT</h3>
+                            <div class="flex flex-col gap-2 mt-3">
+                                <a href="https://github.com/${GITHUB_USERNAME}" target="_blank" class="flex items-center gap-2 text-gray-300 hover:text-white hover:underline"><i data-lucide="github" class="w-4 h-4"></i> GitHub</a>
+                                <a href="#" target="_blank" class="flex items-center gap-2 text-gray-300 hover:text-white hover:underline"><i data-lucide="linkedin" class="w-4 h-4"></i> LinkedIn</a>
+                                <a href="#" target="_blank" class="flex items-center gap-2 text-gray-300 hover:text-white hover:underline"><i data-lucide="twitter" class="w-4 h-4"></i> Twitter / X</a>
+                            </div>
+                        </div>
+                    `);
+                    break;
+                case 'whoami':
+                    addToHistory(`
+                        <div class="border-l-2 border-green-500 pl-4">
+                            <div class="text-white font-bold text-lg">USER: ROOT</div>
+                            <div class="text-gray-400">Role: System Administrator / Vigilante</div>
+                            <div class="mt-2 text-xs text-gray-500">"I wanted to save the world."</div>
+                        </div>
+                    `);
+                    break;
+                case 'clear':
+                    historyContainer.innerHTML = '';
+                    break;
+                default:
+                    addToHistory(`<span class="text-red-400">Command not found: ${rawCmd}. Type 'help' for options.</span>`);
+            }
+        }
+
+        // Event Listeners
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') runCmd(input.value);
+        });
+
+        document.addEventListener('click', () => input.focus());
+        
+        // Start
+        startBoot();
+
+    </script>
+</body>
+</html>
